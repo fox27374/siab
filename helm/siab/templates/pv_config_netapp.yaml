@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "siab.fullname" . }}-config-netapp
+  labels:
+    {{- include "siab.labels" . | nindent 4 }}
+    type: local
+spec:
+  storageClassName: {{ .Values.persistentvolume.netapp.config.storageclass }}
+  capacity:
+    storage: {{ .Values.persistentvolume.netapp.config.storage }}
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: {{ .Values.persistentvolume.netapp.config.path }}

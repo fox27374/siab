@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "siab.fullname" . }}-netapp
+  labels:
+    {{- include "siab.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.netapp.type }}
+  ports:
+    - port: {{ .Values.service.netapp.port }}
+      targetPort: {{ .Values.service.netapp.port }}
+      protocol: TCP
+      name: splunktcp
+  selector:
+    {{- include "siab.selectorLabels" . | nindent 4 }}
+    role: netapp

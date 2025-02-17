@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "siab.fullname" . }}-data-master
+  labels:
+    {{- include "siab.labels" . | nindent 4 }}
+spec:
+  storageClassName: {{ .Values.persistentvolumeclaim.master.data.storageclass }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.persistentvolumeclaim.master.data.storage }}

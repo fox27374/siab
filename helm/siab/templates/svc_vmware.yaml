@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "siab.fullname" . }}-vmware
+  labels:
+    {{- include "siab.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.vmware.type }}
+  ports:
+    - port: {{ .Values.service.vmware.port }}
+      targetPort: {{ .Values.service.vmware.port }}
+      protocol: TCP
+      name: splunktcp
+  selector:
+    {{- include "siab.selectorLabels" . | nindent 4 }}
+    role: vmware

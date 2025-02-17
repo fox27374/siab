@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "siab.fullname" . }}-master
+  labels:
+    {{- include "siab.labels" . | nindent 4 }}
+    role: master
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "siab.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "siab.selectorLabels" . | nindent 8 }}
+        role: master
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "siab.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      volumes:
+        - name: {{ include "siab.fullname" . }}-config-master
+          persistentVolumeClaim:
+            claimName: {{ include "siab.fullname" . }}-config-master
+        - name: {{ include "siab.fullname" . }}-data-master
+          persistentVolumeClaim:
+            claimName: {{ include "siab.fullname" . }}-data-master
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          #livenessProbe:
+          #  httpGet:
+          #    path: /
+          #    port: 8000
+          #    initialDelaySeconds: 20
+          #    periodSeconds: 10
+          #readinessProbe:
+          #  httpGet:
+          #   path: /
+          #    port: 8000
+
+          volumeMounts:
+            - mountPath: "/opt/splunk/etc"
+              name: {{ include "siab.fullname" . }}-config-master
+            - mountPath: "/opt/splunk/var"
+              name: {{ include "siab.fullname" . }}-data-master
+          env:   
+            - name: "SPLUNK_START_ARGS"
+              value: "--accept-license"
+            #- name: "SPLUNK_LICENSE_URI"
+            #  value: "Free"
+            - name: "SPLUNK_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  key:  SPLUNK_PASSWORD
+                  name: {{ .Release.Name }}-auth
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

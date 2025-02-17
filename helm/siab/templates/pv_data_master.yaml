@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "siab.fullname" . }}-data-master
+  labels:
+    {{- include "siab.labels" . | nindent 4 }}
+    type: local
+spec:
+  storageClassName: {{ .Values.persistentvolume.master.data.storageclass }}
+  capacity:
+    storage: {{ .Values.persistentvolume.master.data.storage }}
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: {{ .Values.persistentvolume.master.data.path }}
